@@ -3,8 +3,8 @@
   "name": "Retail Model Context Protocol (rMCP)",
   "theme": "mint",
   "logo": {
-    "dark": "/logo/light-octogen.svg",
-    "light": "/logo/dark-octogen.svg"
+    "dark": "/logo/dark.svg",
+    "light": "/logo/light.svg"
   },
   "favicon": "/favicon.svg",
   "colors": {
