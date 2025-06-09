@@ -28,6 +28,7 @@
   "navigation": {
     "pages": [
       "introduction",
+      "identity",
       "spec",
       "learn-more"
     ]
