@@ -1,0 +1,180 @@
+---
+title: "Agent and Human Identities"
+description: "How rMCP handles identity management for agents and humans in agentic commerce"
+---
+
+## Overview
+
+While shopping may be intermediated by agents, it is important for both retailers – and consumers – to maintain a relationship: to be able
+to power loyalty programs, personalization, preferences and more. 
+
+The rMCP identity framework provides multiple schemes for authentication and authorization, ensuring that:
+
+- **Agents** can act on behalf of users with proper authorization
+- **Retailers** can verify the legitimacy of requests
+- **Users** maintain control over their data and purchasing decisions
+
+## Identity Schemes
+
+rMCP supports multiple identity schemes to accommodate different use cases and security requirements:
+
+### 1. Magic Links (Email Delegation)
+
+Identity verification through email delegation provides a familiar and accessible authentication method:
+
+**How it works:**
+1. Agent provides an email address for the human shopper
+2. Retailer sends a magic link to that email address
+3. Agent accesses the email inbox and "clicks" the magic link
+4. Agent is now authenticated as that email identity
+
+```json
+{
+  "identity": {
+    "type": "magic_link",
+    "email": "shopper@example.com",
+    "agent_id": "agent_123",
+    "session_token": "temporary_session_token"
+  }
+}
+```
+
+**Pros:**
+- Already supported by most identity providers (Auth0, Okta, etc.)
+- Familiar user experience
+- No additional infrastructure required
+- Works with existing customer databases
+
+**Cons:**
+- No inherent agent identity verification
+- Requires consumer to grant email inbox access to agent
+- Potential privacy concerns with email access
+- Session management complexity
+
+### 2. Decentralized IDs (DIDs) with Verifiable Credentials (VCs)
+
+A privacy-preserving approach using W3C standards for decentralized identity:
+
+**How it works:**
+1. Both agents and users have DIDs (decentralized identifiers)
+2. Users issue Verifiable Credentials to agents with specific permissions
+3. Agents present these VCs to retailers as proof of authorization
+4. Retailers verify the credentials cryptographically
+
+```json
+{
+  "identity": {
+    "type": "did_vc",
+    "agent_did": "did:web:agent.example.com",
+    "user_did": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+    "verifiable_credential": {
+      "type": ["VerifiableCredential", "ShoppingAuthorization"],
+      "issuer": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "credentialSubject": {
+        "id": "did:web:agent.example.com",
+        "permissions": ["purchase", "view_orders"],
+        "expires": "2024-12-31T23:59:59Z"
+      }
+    }
+  }
+}
+```
+
+**Pros:**
+- Strong cryptographic verification
+- Privacy-preserving (selective disclosure)
+- No central authority required
+- Clear agent and user identity separation
+- Granular permission control
+- Revocable credentials
+
+**Cons:**
+- Requires DID infrastructure
+- Higher technical complexity
+- Less familiar to users
+- Ecosystem still maturing
+
+## Trust and Verification
+
+### Magic Link Approach
+
+For email-based authentication:
+- **Email ownership verification** through magic link delivery
+- **Session tracking** to associate agent actions with user sessions
+- **Activity logs** showing all actions taken by agents on behalf of users
+- **Email notifications** for important actions (purchases, account changes)
+
+### DID/VC Approach
+
+For decentralized identity:
+- **Cryptographic proof** of both agent and user identities
+- **Verifiable credentials** that prove authorization without revealing unnecessary data
+- **Credential revocation** allowing users to instantly revoke agent permissions
+- **Audit trail** with cryptographically signed agent actions
+
+### User Consent Management
+
+Regardless of the identity scheme used, rMCP ensures:
+- Explicit consent for agent authorization
+- Clear visibility into granted permissions
+- Easy revocation mechanisms
+- Transaction approval workflows for high-value purchases
+
+## Implementation Guidelines
+
+### For Retailers
+
+#### Magic Link Implementation
+1. **Leverage existing auth providers** (Auth0, Okta, etc.) that support magic links
+2. **Add agent tracking** to associate sessions with specific agents
+3. **Implement rate limiting** on magic link requests per email
+4. **Provide session management** APIs for agents to maintain authentication
+
+#### DID/VC Implementation
+1. **Set up DID resolution** infrastructure or use existing services
+2. **Implement VC verification** logic following W3C standards
+3. **Define credential schemas** for shopping authorizations
+4. **Build credential status checking** for revocation support
+
+### For Agent Developers
+
+#### Using Magic Links
+1. **Request email access permission** from users transparently
+2. **Implement secure email handling** to retrieve magic links
+3. **Manage session lifecycle** including refresh and expiration
+4. **Provide clear UI** showing which email identity is being used
+
+#### Using DIDs/VCs
+1. **Generate and manage agent DIDs** securely
+2. **Request VCs from users** with minimal required permissions
+3. **Present credentials appropriately** to retailers
+4. **Handle credential expiration** and renewal gracefully
+
+## Security Considerations
+
+### Magic Link Security
+- **Rate limit** magic link requests to prevent email bombing
+- **Short expiration times** for magic links (e.g., 15 minutes)
+- **One-time use** tokens that expire after clicking
+- **Secure email access** protocols for agents
+- **Session timeout** policies for inactive agents
+
+### DID/VC Security
+- **Private key management** for DIDs using secure enclaves
+- **Credential validation** including signature and expiration checks
+- **Revocation checking** before accepting any credential
+- **Minimal disclosure** using selective disclosure features
+- **Secure credential storage** on agent and user devices
+
+### General Security Practices
+- All communications must use HTTPS/TLS
+- Implement comprehensive audit logging
+- Monitor for anomalous agent behavior patterns
+- Provide emergency revocation mechanisms
+- Regular security audits of identity infrastructure
+
+## Next Steps
+
+- Review the [API Specification](/spec) for detailed identity endpoints
+- Explore [example implementations](/learn-more) of identity flows
+- Join the rMCP community to discuss identity standards 
