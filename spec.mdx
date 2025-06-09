@@ -13,13 +13,270 @@ retailer. This is to ensure reliability of dynamic data such as pricing and avai
 Thus, we call for a standardized product schema across all of retail. However, non-catalog related tool calls can have varying schemas on a
 per retailer basis. The underlying consumer agent LLMs will handle making the apprpriate call and parsing the response.
 
-## MCP Endpoints
 
-### Retailer MCP
-
-- **Catalog Search & Discovery**: `search_catalog`
-- **Cart Management and Checkout**: `update_cart`, `checkout`
-- **Post-Purchase Operations**: `initiate_return`, `get_order_status`
-- **CRM Opt**: `crm_opt_in`
-- **Account & Loyalty**: `create_account`, `link_account`, `get_account`
-- **Brand Context**: `size_recommendation` 
+## `search_catalog`
+```jsonc
+{
+  "name": "search_catalog",
+  "description": "Full‑text and faceted search across a retailer's live catalog.",
+  "input_schema": {
+    "type": "object",
+    "required": ["query"],
+    "properties": {
+      "query":     { "type": "string",  "description": "Natural‑language search string." },
+      "filters":   { "type": "object",  "description": "Facet key‑value pairs (brand, color, price_max …)." },
+      "sort":      { "type": "string",  "enum": ["relevance","price_asc","price_desc","new"], "default": "relevance" },
+      "page_size": { "type": "integer", "minimum": 1, "maximum": 100, "default": 20 },
+      "locale":    { "type": "string",  "description": "BCP‑47 locale (e.g. en‑US)." }
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "required": ["results"],
+    "properties": {
+      "results": { 
+        "type": "array", 
+        "items": { 
+          "type": "object",
+          "description": "Product object containing id, name, description, price, images, url, availability, and other product attributes"
+        } 
+      }
+    }
+  }
+}
+```
+## `update_cart`
+```jsonc
+{
+  "name": "update_cart",
+  "description": "Add, remove, or update line items in a cart.",
+  "input_schema": {
+    "type": "object",
+    "required": ["cart_id"],
+    "properties": {
+      "cart_id": { "type": "string" },
+      "add_items": { 
+        "type": "array",
+        "description": "Array of line items to add, each containing product_id, quantity, and variant information"
+      },
+      "update_items": { 
+        "type": "array",
+        "description": "Array of line items to update, each containing line_item_id and new quantity"
+      },
+      "remove_item_ids": { "type": "array", "items": { "type": "string" } }
+    }
+  },
+  "output_schema": { 
+    "type": "object",
+    "description": "Cart object containing items, prices, totals, discounts, and other cart metadata"
+  }
+}
+```
+## `checkout`
+```jsonc
+{
+  "name": "checkout",
+  "description": "Convert a cart into a tokenized, ready‑to‑pay checkout session.",
+  "input_schema": {
+    "type": "object",
+    "required": ["cart_id","payment_method"],
+    "properties": {
+      "cart_id":          { "type": "string" },
+      "payment_method":   { "type": "string", "enum": ["apple_pay","google_pay","card_on_file","new_card"] },
+      "shipping_address": { 
+        "type": "object",
+        "description": "Shipping address with street, city, state, postal_code, and country fields"
+      },
+      "billing_address":  { 
+        "type": "object",
+        "description": "Billing address with street, city, state, postal_code, and country fields"
+      },
+      "email":            { "type": "string", "format": "email" },
+      "phone":            { "type": "string" }
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "required": ["checkout_url","expires_at"],
+    "properties": {
+      "checkout_url": { "type": "string", "description": "Tokenized URL the agent can open or show." },
+      "expires_at":   { "type": "string", "format": "date-time" }
+    }
+  }
+}
+```
+## `initiate_return`
+```jsonc
+{
+  "name": "initiate_return",
+  "description": "Begin a return or exchange for items in an order.",
+  "input_schema": {
+    "type": "object",
+    "required": ["order_id","items"],
+    "properties": {
+      "order_id": { "type": "string" },
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["line_item_id"],
+          "properties": {
+            "line_item_id": { "type": "string" },
+            "reason_code":  { "type": "string" },
+            "quantity":     { "type": "integer", "minimum": 1, "default": 1 }
+          }
+        }
+      }
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "required": ["return_id","label_url"],
+    "properties": {
+      "return_id":      { "type": "string" },
+      "label_url":      { "type": "string" },
+      "refund_estimate":{ "type": "number" }
+    }
+  }
+}
+```
+## `initiate_return`
+```jsonc
+{
+  "name": "get_order_status",
+  "description": "Fetch shipment and fulfillment status for an order.",
+  "input_schema": {
+    "type": "object",
+    "required": ["order_id"],
+    "properties": { "order_id": { "type": "string" } }
+  },
+  "output_schema": {
+    "type": "object",
+    "required": ["status","events"],
+    "properties": {
+      "status": { "type": "string", "enum": ["pending","fulfilled","shipped","delivered","canceled","returned"] },
+      "events": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["timestamp","message"],
+          "properties": {
+            "timestamp": { "type": "string", "format": "date-time" },
+            "message":   { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}
+'''
+## `crm_opt_in`
+```jsonc
+{
+  "name": "crm_opt_in",
+  "description": "Register or update a user's marketing preferences.",
+  "input_schema": {
+    "type": "object",
+    "required": ["email","consent"],
+    "properties": {
+      "email":   { "type": "string", "format": "email" },
+      "phone":   { "type": "string" },
+      "consent": { "type": "boolean" }
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "required": ["success"],
+    "properties": { "success": { "type": "boolean" } }
+  }
+}
+'''
+### `create_account`
+```jsonc
+{
+  "name": "create_account",
+  "description": "Create a customer account on the retailer's system.",
+  "input_schema": {
+    "type": "object",
+    "required": ["email","password"],
+    "properties": {
+      "email":      { "type": "string", "format": "email" },
+      "password":   { "type": "string" },
+      "first_name": { "type": "string" },
+      "last_name":  { "type": "string" },
+      "phone":      { "type": "string" }
+    }
+  },
+  "output_schema": { 
+    "type": "object",
+    "description": "Account object containing customer ID, profile information, and authentication details"
+  }
+}
+'''
+## `link_account`
+```jsonc
+{
+  "name": "link_account",
+  "description": "Link an existing retailer account to the agent session.",
+  "input_schema": {
+    "type": "object",
+    "required": ["email","password"],
+    "properties": {
+      "email":    { "type": "string", "format": "email" },
+      "password": { "type": "string" }
+    }
+  },
+  "output_schema": { 
+    "type": "object",
+    "description": "Account object containing customer ID, profile information, and authentication details"
+  }
+}
+'''
+## `get_account`
+```jsonc
+{
+  "name": "get_account",
+  "description": "Retrieve profile, loyalty status, and store credits for an authenticated customer.",
+  "input_schema": {
+    "type": "object",
+    "required": ["customer_id"],
+    "properties": { "customer_id": { "type": "string" } }
+  },
+  "output_schema": { 
+    "type": "object",
+    "description": "Account object containing profile details, loyalty points, store credits, and saved preferences"
+  }
+}
+'''
+## `size_recommendation`
+```jsonc
+{
+  "name": "size_recommendation",
+  "description": "Return size and fit guidance for a product given user measurements.",
+  "input_schema": {
+    "type": "object",
+    "required": ["product_id","metrics"],
+    "properties": {
+      "product_id": { "type": "string" },
+      "metrics": {
+        "type": "object",
+        "properties": {
+          "height_cm": { "type": "number" },
+          "weight_kg": { "type": "number" },
+          "chest_cm":  { "type": "number" },
+          "waist_cm":  { "type": "number" },
+          "hip_cm":    { "type": "number" }
+        }
+      },
+      "preference": { "type": "string", "enum": ["slim","regular","relaxed"], "default": "regular" }
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "required": ["recommended_size","confidence"],
+    "properties": {
+      "recommended_size": { "type": "string" },
+      "confidence":       { "type": "number", "minimum": 0, "maximum": 1 }
+    }
+  }
+}
