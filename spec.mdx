@@ -2,6 +2,17 @@
 title: "rMCP Specification"
 description: "Technical specification for the Retail Model Context Protocol"
 ---
+## A note on Schemas
+
+It is likely agents will maintain a global, cross retailer, product catalog. Agents will query that index for top of the funnel discovery.
+This is what Perplexity and ChatGPT currently do: they access a global catalog provided by Google and Bing product search. 
+
+However, as consumers progress through the purchasing funnel, agents will likely need to access the catalog search endpoints provided by the
+retailer. This is to ensure reliability of dynamic data such as pricing and availability. 
+
+Thus, we call for a standardized product schema across all of retail. However, non-catalog related tool calls can have varying schemas on a
+per retailer basis. The underlying consumer agent LLMs will handle making the apprpriate call and parsing the response.
+
 ## MCP Endpoints
 
 ### Retailer MCP
