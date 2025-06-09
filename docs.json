@@ -1,102 +1,46 @@
 {
   "$schema": "https://mintlify.com/docs.json",
+  "name": "Retail Model Context Protocol (rMCP)",
   "theme": "mint",
-  "name": "Mint Starter Kit",
-  "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+  "logo": {
+    "dark": "/logo/light-octogen.svg",
+    "light": "/logo/dark-octogen.svg"
   },
   "favicon": "/favicon.svg",
+  "colors": {
+    "primary": "#F97316",
+    "light": "#FDBA74",
+    "dark": "#C2410C"
+  },
+  "feedback": {
+    "thumbsRating": true
+  },
+  "topbarLinks": [
+    {
+      "name": "Support",
+      "url": "mailto:support@octogen.ai"
+    }
+  ],
+  "topbarCtaButton": {
+    "name": "Contact Us",
+    "url": "mailto:support@octogen.ai"
+  },
   "navigation": {
-    "tabs": [
-      {
-        "tab": "Guides",
-        "groups": [
-          {
-            "group": "Get Started",
-            "pages": [
-              "index",
-              "quickstart",
-              "development"
-            ]
-          },
-          {
-            "group": "Essentials",
-            "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/settings",
-              "essentials/navigation",
-              "essentials/reusable-snippets"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "API Reference",
-        "groups": [
-          {
-            "group": "API Documentation",
-            "pages": [
-              "api-reference/introduction"
-            ]
-          },
-          {
-            "group": "Endpoint Examples",
-            "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
-            ]
-          }
-        ]
-      }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Community",
-          "href": "https://mintlify.com/community",
-          "icon": "slack"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
+    "pages": [
+      "introduction",
+      "spec",
+      "learn-more"
+    ]
   },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
+  "footerSocials": {
+    "twitter": "https://x.com/octogen",
+    "github": "https://github.com/octogen-systems",
+    "linkedin": "https://linkedin.com/company/octogen"
   },
-  "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/introduction"
     }
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
-  }
+  ]
 }
